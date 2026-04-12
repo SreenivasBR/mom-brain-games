@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Brain Games</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, serif;
+      background: #f5f0e8;
+      min-height: 100vh;
+    }
+
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px 16px; }
+    .screen.active { display: flex; }
+
+    .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .back-btn {
+      font-size: 22px; background: #fff; border: 1px solid #ddd;
+      border-radius: 50%; width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .screen-title { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+
+    .home-header { text-align: center; margin-bottom: 32px; padding-top: 24px; }
+    .home-greeting { font-size: 30px; font-weight: 600; color: #1a1a1a; line-height: 1.4; }
+    .home-sub { font-size: 20px; color: #666; margin-top: 10px; }
+
+    .game-cards { display: flex; flex-direction: column; gap: 16px; }
+    .game-card {
+      background: #fff; border-radius: 20px; border: 1px solid #e0ddd6;
+      padding: 24px 20px; display: flex; align-items: center; gap: 16px;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .game-card:active { transform: scale(0.98); }
+    .game-icon {
+      font-size: 36px; flex-shrink: 0; width: 68px; height: 68px;
+      display: flex; align-items: center; justify-content: center; border-radius: 16px;
+    }
+    .game-icon.words  { background: #E1F5EE; }
+    .game-icon.memory { background: #E6F1FB; }
+    .game-icon.pictures { background: #FAEEDA; }
+    .game-info { flex: 1; }
+    .game-name { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+    .game-desc { font-size: 16px; color: #666; margin-top: 4px; line-height: 1.5; }
+    .game-arrow { font-size: 28px; color: #999; }
+
+    .score-bar {
+      background: #eae6dc; border-radius: 14px; padding: 14px 18px;
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .score-label { font-size: 17px; color: #555; }
+    .score-val { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+
+    .btn-primary {
+      background: #0F6E56; color: #fff; border: none; border-radius: 16px;
+      padding: 20px 28px; font-size: 20px; font-weight: 600; cursor: pointer;
+      width: 100%; margin-top: 16px;
+    }
+    .btn-primary:active { background: #085041; }
+
+    .result-banner { border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 12px; margin-top: 12px; }
+    .result-banner.success { background: #E1F5EE; }
+    .result-banner.fail    { background: #FCEBEB; }
+    .result-banner .emoji  { font-size: 40px; display: block; margin-bottom: 8px; }
+    .result-banner .msg    { font-size: 20px; font-weight: 600; }
+    .result-banner.success .msg { color: #0F6E56; }
+    .result-banner.fail    .msg { color: #A32D2D; }
+
+    /* WORD PUZZLE */
+    .word-clue { font-size: 20px; color: #444; text-align: center; margin-bottom: 16px; line-height: 1.6; }
+    .word-progress { font-size: 17px; color: #666; text-align: center; margin-bottom: 16px; }
+    .word-blanks { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .blank-box {
+      width: 50px; height: 60px; border-bottom: 3px solid #0F6E56;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 6px; font-size: 28px; font-weight: 600; color: #1a1a1a;
+    }
+    .blank-box.filled { color: #0F6E56; }
+    .letter-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+    .letter-btn {
+      width: 56px; height: 56px; background: #fff; border: 1px solid #ccc;
+      border-radius: 12px; font-size: 24px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; color: #1a1a1a;
+    }
+    .letter-btn:active { background: #E1F5EE; }
+    .letter-btn.used { opacity: 0.25; pointer-events: none; }
+
+    /* MEMORY MATCH */
+    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .mem-card {
+      aspect-ratio: 1; background: #185FA5; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; cursor: pointer; position: relative; overflow: hidden;
+    }
+    .mem-card .front {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 30px; background: #fff;
+      border-radius: 14px; border: 1px solid #e0ddd6; opacity: 0;
+    }
+    .mem-card.flipped .front { opacity: 1; }
+    .mem-card.matched { opacity: 0.35; pointer-events: none; }
+    .mem-card.matched .front { background: #E1F5EE; }
+    .pairs-info { font-size: 18px; color: #555; text-align: center; margin-bottom: 14px; }
+
+    /* PICTURE QUIZ */
+    .pic-container {
+      background: #eae6dc; border-radius: 20px; height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; font-size: 100px;
+    }
+    .pic-question { font-size: 22px; font-weight: 600; color: #1a1a1a; text-align: center; margin-bottom: 20px; line-height: 1.4; }
+    .pic-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .pic-option {
+      background: #fff; border: 1px solid #ccc; border-radius: 16px;
+      padding: 18px 12px; font-size: 20px; text-align: center;
+      cursor: pointer; color: #1a1a1a; font-family: Georgia, serif;
+    }
+    .pic-option:active { background: #E6F1FB; }
+    .pic-option.correct { background: #E1F5EE; border: 2px solid #1D9E75; color: #085041; }
+    .pic-option.wrong   { background: #FCEBEB; border: 2px solid #E24B4A; color: #791F1F; }
+
+    .spacer { flex: 1; }
+    .total-score-line { text-align: center; font-size: 17px; color: #666; margin-top: 24px; padding-bottom: 24px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div class="screen active" id="home-screen">
+    <div class="home-header">
+      <div class="home-greeting">Hello! 🌸<br>Ready to play?</div>
+      <div class="home-sub">Pick a game to start</div>
+    </div>
+    <div class="game-cards">
+      <div class="game-card" onclick="startWord()">
+        <div class="game-icon words">📝</div>
+        <div class="game-info">
+          <div class="game-name">Word Puzzle</div>
+          <div class="game-desc">Guess the word from the clue</div>
+        </div>
+        <div class="game-arrow">›</div>
+      </div>
+      <div class="game-card" onclick="startMemory()">
+        <div class="game-icon memory">🃏</div>
+        <div class="game-info">
+          <div class="game-name">Memory Match</div>
+          <div class="game-desc">Find matching pairs of cards</div>
+        </div>
+        <div class="game-arrow">›</div>
+      </div>
+      <div class="game-card" onclick="startPicture()">
+        <div class="game-icon pictures">🖼️</div>
+        <div class="game-info">
+          <div class="game-name">Picture Quiz</div>
+          <div class="game-desc">Name what you see!</div>
+        </div>
+        <div class="game-arrow">›</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="total-score-line">Your score today: <strong id="total-score">0</strong> points</div>
+  </div>
+
+  <!-- WORD PUZZLE -->
+  <div class="screen" id="word-screen">
+    <div class="top-bar">
+      <div class="back-btn" onclick="goHome()">‹</div>
+      <div class="screen-title">Word Puzzle</div>
+    </div>
+    <div class="score-bar">
+      <div class="score-label">Score</div>
+      <div class="score-val" id="word-score">0</div>
+    </div>
+    <div class="word-progress" id="word-progress">Word 1 of 5</div>
+    <div class="word-clue" id="word-clue"></div>
+    <div class="word-blanks" id="word-blanks"></div>
+    <div class="letter-grid" id="letter-grid"></div>
+    <div id="word-result"></div>
+    <div class="spacer"></div>
+    <button class="btn-primary" id="word-next-btn" onclick="nextWord()" style="display:none">Next Word ›</button>
+  </div>
+
+  <!-- MEMORY MATCH -->
+  <div class="screen" id="memory-screen">
+    <div class="top-bar">
+      <div class="back-btn" onclick="goHome()">‹</div>
+      <div class="screen-title">Memory Match</div>
+    </div>
+    <div class="score-bar">
+      <div class="score-label">Pairs found</div>
+      <div class="score-val" id="mem-pairs">0 / 8</div>
+    </div>
+    <div class="pairs-info" id="mem-info">Tap two cards to flip them!</div>
+    <div class="memory-grid" id="memory-grid"></div>
+    <div id="mem-result"></div>
+    <div class="spacer"></div>
+    <button class="btn-primary" id="mem-new-btn" onclick="startMemory()" style="display:none">Play Again ›</button>
+  </div>
+
+  <!-- PICTURE QUIZ -->
+  <div class="screen" id="picture-screen">
+    <div class="top-bar">
+      <div class="back-btn" onclick="goHome()">‹</div>
+      <div class="screen-title">Picture Quiz</div>
+    </div>
+    <div class="score-bar">
+      <div class="score-label">Score</div>
+      <div class="score-val" id="pic-score">0</div>
+    </div>
+    <div class="word-progress" id="pic-progress">Question 1 of 6</div>
+    <div class="pic-container" id="pic-image"></div>
+    <div class="pic-question" id="pic-question"></div>
+    <div class="pic-options" id="pic-options"></div>
+    <div id="pic-result"></div>
+    <div class="spacer"></div>
+    <button class="btn-primary" id="pic-next-btn" onclick="nextPicture()" style="display:none">Next ›</button>
+  </div>
+
+</div>
+<script>
+  var totalScore = 0;
+
+  function goHome() {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('home-screen').classList.add('active');
+    document.getElementById('total-score').textContent = totalScore;
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ===== WORD PUZZLE ===== */
+  var wordData = [
+    { clue: "You drink it in the morning, it's hot and smells nice ☕", answer: "COFFEE", letters: ["C","O","F","E","T","A","H","R","L"] },
+    { clue: "It shines bright in the sky during the day ☀️", answer: "SUN", letters: ["S","U","N","A","T","O","M","R"] },
+    { clue: "A garden flower that is red and has thorns 🌹", answer: "ROSE", letters: ["R","O","S","E","T","A","L","W"] },
+    { clue: "You read this, it has many pages and a story 📖", answer: "BOOK", letters: ["B","O","K","P","A","M","T","L"] },
+    { clue: "A fruit that is yellow and monkeys love it 🍌", answer: "BANANA", letters: ["B","A","N","P","O","E","T","R","L"] }
+  ];
+  var wordIdx = 0, wordScore = 0, wordGuess = [], wordUsed = {};
+
+  function startWord() {
+    wordIdx = 0; wordScore = 0;
+    showScreen('word-screen');
+    loadWord();
+  }
+
+  function loadWord() {
+    var w = wordData[wordIdx];
+    wordGuess = Array(w.answer.length).fill('');
+    wordUsed = {};
+    document.getElementById('word-score').textContent = wordScore;
+    document.getElementById('word-progress').textContent = 'Word ' + (wordIdx + 1) + ' of ' + wordData.length;
+    document.getElementById('word-clue').textContent = w.clue;
+    document.getElementById('word-result').innerHTML = '';
+    document.getElementById('word-next-btn').style.display = 'none';
+    renderBlanks(); renderLetters();
+  }
+
+  function renderBlanks() {
+    var w = wordData[wordIdx];
+    var html = '';
+    for (var i = 0; i < w.answer.length; i++) {
+      html += '<div class="blank-box' + (wordGuess[i] ? ' filled' : '') + '">' + (wordGuess[i] || '') + '</div>';
+    }
+    document.getElementById('word-blanks').innerHTML = html;
+  }
+
+  function renderLetters() {
+    var w = wordData[wordIdx];
+    var html = '';
+    for (var i = 0; i < w.letters.length; i++) {
+      var used = wordUsed[i] ? ' used' : '';
+      html += '<div class="letter-btn' + used + '" onclick="pickLetter(' + i + ')">' + w.letters[i] + '</div>';
+    }
+    document.getElementById('letter-grid').innerHTML = html;
+  }
+
+  function pickLetter(i) {
+    var w = wordData[wordIdx];
+    var pos = wordGuess.indexOf('');
+    if (pos === -1) return;
+    wordGuess[pos] = w.letters[i];
+    wordUsed[i] = true;
+    renderBlanks(); renderLetters();
+    if (wordGuess.indexOf('') === -1) checkWord();
+  }
+
+  function checkWord() {
+    var w = wordData[wordIdx];
+    var correct = wordGuess.join('') === w.answer;
+    if (correct) { wordScore += 10; totalScore += 10; }
+    document.getElementById('word-score').textContent = wordScore;
+    var html = '<div class="result-banner ' + (correct ? 'success' : 'fail') + '">';
+    html += '<span class="emoji">' + (correct ? '🎉' : '💡') + '</span>';
+    html += '<span class="msg">' + (correct ? 'Well done! +10 points' : 'The answer was: ' + w.answer) + '</span></div>';
+    document.getElementById('word-result').innerHTML = html;
+    document.getElementById('word-next-btn').style.display = 'block';
+    document.getElementById('word-next-btn').textContent = wordIdx < wordData.length - 1 ? 'Next Word ›' : 'Finish ✓';
+  }
+
+  function nextWord() {
+    wordIdx++;
+    if (wordIdx >= wordData.length) { goHome(); return; }
+    loadWord();
+  }
+
+  /* ===== MEMORY MATCH ===== */
+  var memEmojis = ['🌸','🌺','🍎','🐘','🦋','☕','🌙','🐦'];
+  var memCards = [], memFlipped = [], memMatched = 0, memLocked = false;
+
+  function startMemory() {
+    showScreen('memory-screen');
+    memMatched = 0; memFlipped = []; memLocked = false;
+    document.getElementById('mem-pairs').textContent = '0 / 8';
+    document.getElementById('mem-info').textContent = 'Tap two cards to flip them!';
+    document.getElementById('mem-result').innerHTML = '';
+    document.getElementById('mem-new-btn').style.display = 'none';
+    var deck = memEmojis.concat(memEmojis);
+    deck.sort(function() { return Math.random() - 0.5; });
+    memCards = deck;
+    var html = '';
+    for (var i = 0; i < deck.length; i++) {
+      html += '<div class="mem-card" id="mc' + i + '" onclick="flipCard(' + i + ')"><div class="front">' + deck[i] + '</div></div>';
+    }
+    document.getElementById('memory-grid').innerHTML = html;
+  }
+
+  function flipCard(i) {
+    if (memLocked) return;
+    var el = document.getElementById('mc' + i);
+    if (!el || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+    el.classList.add('flipped');
+    memFlipped.push(i);
+    if (memFlipped.length === 2) { memLocked = true; setTimeout(checkMemory, 900); }
+  }
+
+  function checkMemory() {
+    var a = memFlipped[0], b = memFlipped[1];
+    var elA = document.getElementById('mc' + a), elB = document.getElementById('mc' + b);
+    if (memCards[a] === memCards[b]) {
+      elA.classList.add('matched'); elB.classList.add('matched');
+      memMatched++; totalScore += 5;
+      document.getElementById('mem-pairs').textContent = memMatched + ' / 8';
+      document.getElementById('mem-info').textContent = memMatched === 8 ? 'Amazing! You found them all!' : 'Great match! Keep going!';
+      if (memMatched === 8) {
+        document.getElementById('mem-result').innerHTML = '<div class="result-banner success"><span class="emoji">🎊</span><span class="msg">You matched all 8 pairs!</span></div>';
+        document.getElementById('mem-new-btn').style.display = 'block';
+      }
+    } else {
+      setTimeout(function() {
+        elA.classList.remove('flipped'); elB.classList.remove('flipped');
+        document.getElementById('mem-info').textContent = 'Try again!';
+      }, 500);
+    }
+    memFlipped = []; memLocked = false;
+  }
+
+  /* ===== PICTURE QUIZ ===== */
+  var picData = [
+    { img: '🐘', question: 'What animal is this?', options: ['Elephant','Hippo','Rhino','Bear'], answer: 'Elephant' },
+    { img: '🍊', question: 'What fruit is this?', options: ['Lemon','Orange','Mango','Peach'], answer: 'Orange' },
+    { img: '🚂', question: 'What vehicle is this?', options: ['Bus','Car','Train','Boat'], answer: 'Train' },
+    { img: '🌻', question: 'What flower is this?', options: ['Rose','Daisy','Sunflower','Lotus'], answer: 'Sunflower' },
+    { img: '🦜', question: 'What bird is this?', options: ['Sparrow','Parrot','Eagle','Crow'], answer: 'Parrot' },
+    { img: '🎸', question: 'What instrument is this?', options: ['Sitar','Violin','Guitar','Flute'], answer: 'Guitar' }
+  ];
+  var picIdx = 0, picScore = 0, picAnswered = false;
+
+  function startPicture() {
+    picIdx = 0; picScore = 0; picAnswered = false;
+    showScreen('picture-screen');
+    loadPicture();
+  }
+
+  function loadPicture() {
+    var p = picData[picIdx];
+    picAnswered = false;
+    document.getElementById('pic-score').textContent = picScore;
+    document.getElementById('pic-progress').textContent = 'Question ' + (picIdx + 1) + ' of ' + picData.length;
+    document.getElementById('pic-image').textContent = p.img;
+    document.getElementById('pic-question').textContent = p.question;
+    document.getElementById('pic-result').innerHTML = '';
+    document.getElementById('pic-next-btn').style.display = 'none';
+    var opts = p.options.slice().sort(function() { return Math.random() - 0.5; });
+    var html = '';
+    for (var i = 0; i < opts.length; i++) {
+      html += '<div class="pic-option" onclick="pickPic(this,\'' + opts[i] + '\')">' + opts[i] + '</div>';
+    }
+    document.getElementById('pic-options').innerHTML = html;
+  }
+
+  function pickPic(el, choice) {
+    if (picAnswered) return;
+    picAnswered = true;
+    var p = picData[picIdx];
+    var correct = choice === p.answer;
+    if (correct) { picScore += 10; totalScore += 10; el.classList.add('correct'); }
+    else {
+      el.classList.add('wrong');
+      document.querySelectorAll('.pic-option').forEach(function(o) {
+        if (o.textContent === p.answer) o.classList.add('correct');
+      });
+    }
+    document.getElementById('pic-score').textContent = picScore;
+    var html = '<div class="result-banner ' + (correct ? 'success' : 'fail') + '" style="margin-top:16px">';
+    html += '<span class="emoji">' + (correct ? '🌟' : '💡') + '</span>';
+    html += '<span class="msg">' + (correct ? 'Correct! +10 points' : 'The answer is: ' + p.answer) + '</span></div>';
+    document.getElementById('pic-result').innerHTML = html;
+    document.getElementById('pic-next-btn').style.display = 'block';
+    document.getElementById('pic-next-btn').textContent = picIdx < picData.length - 1 ? 'Next ›' : 'Finish ✓';
+  }
+
+  function nextPicture() {
+    picIdx++;
+    if (picIdx >= picData.length) { goHome(); return; }
+    loadPicture();
+  }
+</script>
+</body>
+</html>
