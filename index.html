@@ -6,48 +6,25 @@
   <title>Brain Games</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: Georgia, serif;
-      background: #f5f0e8;
-      min-height: 100vh;
-    }
-
-    #app {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      position: relative;
-    }
+    body { font-family: Georgia, serif; background: #f5f0e8; min-height: 100vh; }
+    #app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
     .screen { display: none; flex-direction: column; min-height: 100vh; padding: 20px 16px; }
     .screen.active { display: flex; }
 
-    .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .back-btn {
-      font-size: 22px; background: #fff; border: 1px solid #ddd;
-      border-radius: 50%; width: 48px; height: 48px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0;
-    }
-    .screen-title { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+    .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .back-btn { font-size: 22px; background: #fff; border: 1px solid #ddd; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+    .screen-title { font-size: 24px; font-weight: 600; color: #1a1a1a; flex: 1; }
 
     .home-header { text-align: center; margin-bottom: 32px; padding-top: 24px; }
     .home-greeting { font-size: 30px; font-weight: 600; color: #1a1a1a; line-height: 1.4; }
     .home-sub { font-size: 20px; color: #666; margin-top: 10px; }
 
     .game-cards { display: flex; flex-direction: column; gap: 16px; }
-    .game-card {
-      background: #fff; border-radius: 20px; border: 1px solid #e0ddd6;
-      padding: 24px 20px; display: flex; align-items: center; gap: 16px;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-    }
+    .game-card { background: #fff; border-radius: 20px; border: 1px solid #e0ddd6; padding: 24px 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .game-card:active { transform: scale(0.98); }
-    .game-icon {
-      font-size: 36px; flex-shrink: 0; width: 68px; height: 68px;
-      display: flex; align-items: center; justify-content: center; border-radius: 16px;
-    }
-    .game-icon.words  { background: #E1F5EE; }
+    .game-icon { font-size: 36px; flex-shrink: 0; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; border-radius: 16px; }
+    .game-icon.words { background: #E1F5EE; }
     .game-icon.memory { background: #E6F1FB; }
     .game-icon.pictures { background: #FAEEDA; }
     .game-info { flex: 1; }
@@ -55,80 +32,51 @@
     .game-desc { font-size: 16px; color: #666; margin-top: 4px; line-height: 1.5; }
     .game-arrow { font-size: 28px; color: #999; }
 
-    .score-bar {
-      background: #eae6dc; border-radius: 14px; padding: 14px 18px;
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-    }
-    .score-label { font-size: 17px; color: #555; }
-    .score-val { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+    .stats-bar { background: #eae6dc; border-radius: 14px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .stat-block { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .stat-label { font-size: 14px; color: #777; }
+    .stat-val { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+    .timer-val { color: #0F6E56; }
+    .timer-val.warning { color: #BA7517; }
+    .timer-val.danger { color: #A32D2D; }
 
-    .btn-primary {
-      background: #0F6E56; color: #fff; border: none; border-radius: 16px;
-      padding: 20px 28px; font-size: 20px; font-weight: 600; cursor: pointer;
-      width: 100%; margin-top: 16px;
-    }
+    .btn-primary { background: #0F6E56; color: #fff; border: none; border-radius: 16px; padding: 20px 28px; font-size: 20px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; }
     .btn-primary:active { background: #085041; }
 
-    .result-banner { border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 12px; margin-top: 12px; }
+    .result-banner { border-radius: 16px; padding: 20px; text-align: center; margin-top: 12px; margin-bottom: 8px; }
     .result-banner.success { background: #E1F5EE; }
-    .result-banner.fail    { background: #FCEBEB; }
-    .result-banner .emoji  { font-size: 40px; display: block; margin-bottom: 8px; }
-    .result-banner .msg    { font-size: 20px; font-weight: 600; }
+    .result-banner.fail { background: #FCEBEB; }
+    .result-banner .emoji { font-size: 40px; display: block; margin-bottom: 8px; }
+    .result-banner .msg { font-size: 20px; font-weight: 600; }
     .result-banner.success .msg { color: #0F6E56; }
-    .result-banner.fail    .msg { color: #A32D2D; }
+    .result-banner.fail .msg { color: #A32D2D; }
 
-    /* WORD PUZZLE */
+    .word-progress { font-size: 17px; color: #666; text-align: center; margin-bottom: 12px; }
     .word-clue { font-size: 20px; color: #444; text-align: center; margin-bottom: 16px; line-height: 1.6; }
-    .word-progress { font-size: 17px; color: #666; text-align: center; margin-bottom: 16px; }
-    .word-blanks { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
-    .blank-box {
-      width: 50px; height: 60px; border-bottom: 3px solid #0F6E56;
-      display: flex; align-items: flex-end; justify-content: center;
-      padding-bottom: 6px; font-size: 28px; font-weight: 600; color: #1a1a1a;
-    }
+    .word-blanks { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .blank-box { width: 50px; height: 60px; border-bottom: 3px solid #0F6E56; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font-size: 28px; font-weight: 600; color: #1a1a1a; }
     .blank-box.filled { color: #0F6E56; }
-    .letter-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
-    .letter-btn {
-      width: 56px; height: 56px; background: #fff; border: 1px solid #ccc;
-      border-radius: 12px; font-size: 24px; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; color: #1a1a1a;
-    }
+    .letter-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .letter-btn { width: 56px; height: 56px; background: #fff; border: 1px solid #ccc; border-radius: 12px; font-size: 24px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #1a1a1a; }
     .letter-btn:active { background: #E1F5EE; }
     .letter-btn.used { opacity: 0.25; pointer-events: none; }
 
-    /* MEMORY MATCH */
-    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-    .mem-card {
-      aspect-ratio: 1; background: #185FA5; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 32px; cursor: pointer; position: relative; overflow: hidden;
-    }
-    .mem-card .front {
-      position: absolute; inset: 0; display: flex; align-items: center;
-      justify-content: center; font-size: 30px; background: #fff;
-      border-radius: 14px; border: 1px solid #e0ddd6; opacity: 0;
-    }
+    .mem-set-label { font-size: 15px; color: #888; text-align: center; margin-bottom: 6px; }
+    .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .mem-card { aspect-ratio: 1; background: #185FA5; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; position: relative; overflow: hidden; }
+    .mem-card .front { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; background: #fff; border-radius: 14px; border: 1px solid #e0ddd6; opacity: 0; }
     .mem-card.flipped .front { opacity: 1; }
     .mem-card.matched { opacity: 0.35; pointer-events: none; }
     .mem-card.matched .front { background: #E1F5EE; }
-    .pairs-info { font-size: 18px; color: #555; text-align: center; margin-bottom: 14px; }
+    .pairs-info { font-size: 18px; color: #555; text-align: center; margin-bottom: 12px; }
 
-    /* PICTURE QUIZ */
-    .pic-container {
-      background: #eae6dc; border-radius: 20px; height: 200px;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 20px; font-size: 100px;
-    }
+    .pic-container { background: #eae6dc; border-radius: 20px; height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 100px; }
     .pic-question { font-size: 22px; font-weight: 600; color: #1a1a1a; text-align: center; margin-bottom: 20px; line-height: 1.4; }
     .pic-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .pic-option {
-      background: #fff; border: 1px solid #ccc; border-radius: 16px;
-      padding: 18px 12px; font-size: 20px; text-align: center;
-      cursor: pointer; color: #1a1a1a; font-family: Georgia, serif;
-    }
+    .pic-option { background: #fff; border: 1px solid #ccc; border-radius: 16px; padding: 18px 12px; font-size: 20px; text-align: center; cursor: pointer; color: #1a1a1a; font-family: Georgia, serif; }
     .pic-option:active { background: #E6F1FB; }
     .pic-option.correct { background: #E1F5EE; border: 2px solid #1D9E75; color: #085041; }
-    .pic-option.wrong   { background: #FCEBEB; border: 2px solid #E24B4A; color: #791F1F; }
+    .pic-option.wrong { background: #FCEBEB; border: 2px solid #E24B4A; color: #791F1F; }
 
     .spacer { flex: 1; }
     .total-score-line { text-align: center; font-size: 17px; color: #666; margin-top: 24px; padding-bottom: 24px; }
@@ -179,9 +127,15 @@
       <div class="back-btn" onclick="goHome()">‹</div>
       <div class="screen-title">Word Puzzle</div>
     </div>
-    <div class="score-bar">
-      <div class="score-label">Score</div>
-      <div class="score-val" id="word-score">0</div>
+    <div class="stats-bar">
+      <div class="stat-block">
+        <div class="stat-label">Score</div>
+        <div class="stat-val" id="word-score">0</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Time</div>
+        <div class="stat-val timer-val" id="word-timer">60</div>
+      </div>
     </div>
     <div class="word-progress" id="word-progress">Word 1 of 5</div>
     <div class="word-clue" id="word-clue"></div>
@@ -198,15 +152,22 @@
       <div class="back-btn" onclick="goHome()">‹</div>
       <div class="screen-title">Memory Match</div>
     </div>
-    <div class="score-bar">
-      <div class="score-label">Pairs found</div>
-      <div class="score-val" id="mem-pairs">0 / 8</div>
+    <div class="stats-bar">
+      <div class="stat-block">
+        <div class="stat-label">Pairs</div>
+        <div class="stat-val" id="mem-pairs">0 / 8</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Time</div>
+        <div class="stat-val timer-val" id="mem-timer">120</div>
+      </div>
     </div>
+    <div class="mem-set-label" id="mem-set-label"></div>
     <div class="pairs-info" id="mem-info">Tap two cards to flip them!</div>
     <div class="memory-grid" id="memory-grid"></div>
     <div id="mem-result"></div>
     <div class="spacer"></div>
-    <button class="btn-primary" id="mem-new-btn" onclick="startMemory()" style="display:none">Play Again ›</button>
+    <button class="btn-primary" id="mem-new-btn" onclick="startMemory()" style="display:none">Next Theme ›</button>
   </div>
 
   <!-- PICTURE QUIZ -->
@@ -215,9 +176,15 @@
       <div class="back-btn" onclick="goHome()">‹</div>
       <div class="screen-title">Picture Quiz</div>
     </div>
-    <div class="score-bar">
-      <div class="score-label">Score</div>
-      <div class="score-val" id="pic-score">0</div>
+    <div class="stats-bar">
+      <div class="stat-block">
+        <div class="stat-label">Score</div>
+        <div class="stat-val" id="pic-score">0</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Time</div>
+        <div class="stat-val timer-val" id="pic-timer">30</div>
+      </div>
     </div>
     <div class="word-progress" id="pic-progress">Question 1 of 6</div>
     <div class="pic-container" id="pic-image"></div>
@@ -231,8 +198,30 @@
 </div>
 <script>
   var totalScore = 0;
+  var activeTimer = null;
+
+  function clearTimer() {
+    if (activeTimer) { clearInterval(activeTimer); activeTimer = null; }
+  }
+
+  function startTimer(elId, seconds, onExpire) {
+    clearTimer();
+    var remaining = seconds;
+    var el = document.getElementById(elId);
+    function tick() {
+      el.textContent = remaining;
+      el.className = 'stat-val timer-val';
+      if (remaining <= 10) el.className = 'stat-val timer-val danger';
+      else if (remaining <= 20) el.className = 'stat-val timer-val warning';
+      if (remaining <= 0) { clearTimer(); if (onExpire) onExpire(); return; }
+      remaining--;
+    }
+    tick();
+    activeTimer = setInterval(tick, 1000);
+  }
 
   function goHome() {
+    clearTimer();
     document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
     document.getElementById('home-screen').classList.add('active');
     document.getElementById('total-score').textContent = totalScore;
@@ -245,11 +234,11 @@
 
   /* ===== WORD PUZZLE ===== */
   var wordData = [
-    { clue: "You drink it in the morning, it's hot and smells nice ☕", answer: "COFFEE", letters: ["C","O","F","E","T","A","H","R","L"] },
+    { clue: "You drink it in the morning, it's hot and smells nice ☕", answer: "COFFEE", letters: ["C","O","F","F","E","T","A","H","L"] },
     { clue: "It shines bright in the sky during the day ☀️", answer: "SUN", letters: ["S","U","N","A","T","O","M","R"] },
     { clue: "A garden flower that is red and has thorns 🌹", answer: "ROSE", letters: ["R","O","S","E","T","A","L","W"] },
-    { clue: "You read this, it has many pages and a story 📖", answer: "BOOK", letters: ["B","O","K","P","A","M","T","L"] },
-    { clue: "A fruit that is yellow and monkeys love it 🍌", answer: "BANANA", letters: ["B","A","N","P","O","E","T","R","L"] }
+    { clue: "You read this, it has many pages and a story 📖", answer: "BOOK", letters: ["B","O","O","K","P","A","M","T"] },
+    { clue: "A fruit that is yellow and monkeys love it 🍌", answer: "BANANA", letters: ["B","A","A","A","N","N","P","O","T"] }
   ];
   var wordIdx = 0, wordScore = 0, wordGuess = [], wordUsed = {};
 
@@ -269,6 +258,14 @@
     document.getElementById('word-result').innerHTML = '';
     document.getElementById('word-next-btn').style.display = 'none';
     renderBlanks(); renderLetters();
+    startTimer('word-timer', 60, function() {
+      var w2 = wordData[wordIdx];
+      document.getElementById('word-result').innerHTML =
+        '<div class="result-banner fail"><span class="emoji">⏰</span><span class="msg">Time\'s up! Answer: ' + w2.answer + '</span></div>';
+      document.getElementById('word-next-btn').style.display = 'block';
+      document.getElementById('word-next-btn').textContent = wordIdx < wordData.length - 1 ? 'Next Word ›' : 'Finish ✓';
+      document.querySelectorAll('.letter-btn').forEach(function(b) { b.style.pointerEvents = 'none'; });
+    });
   }
 
   function renderBlanks() {
@@ -301,6 +298,7 @@
   }
 
   function checkWord() {
+    clearTimer();
     var w = wordData[wordIdx];
     var correct = wordGuess.join('') === w.answer;
     if (correct) { wordScore += 10; totalScore += 10; }
@@ -320,17 +318,25 @@
   }
 
   /* ===== MEMORY MATCH ===== */
-  var memEmojis = ['🌸','🌺','🍎','🐘','🦋','☕','🌙','🐦'];
+  var memSets = [
+    { name: 'Nature & Animals', emojis: ['🌸','🌺','🍎','🐘','🦋','☕','🌙','🐦'] },
+    { name: 'Food & Drinks',    emojis: ['🍕','🍦','🥭','🍇','🍩','🥐','🍓','🍋'] },
+    { name: 'Travel & Places',  emojis: ['✈️','🏖️','🗺️','🏔️','🚢','🎡','🌅','🏕️'] }
+  ];
+  var memSetIdx = -1;
   var memCards = [], memFlipped = [], memMatched = 0, memLocked = false;
 
   function startMemory() {
     showScreen('memory-screen');
+    memSetIdx = (memSetIdx + 1) % memSets.length;
+    var set = memSets[memSetIdx];
     memMatched = 0; memFlipped = []; memLocked = false;
     document.getElementById('mem-pairs').textContent = '0 / 8';
     document.getElementById('mem-info').textContent = 'Tap two cards to flip them!';
+    document.getElementById('mem-set-label').textContent = 'Theme: ' + set.name;
     document.getElementById('mem-result').innerHTML = '';
     document.getElementById('mem-new-btn').style.display = 'none';
-    var deck = memEmojis.concat(memEmojis);
+    var deck = set.emojis.concat(set.emojis);
     deck.sort(function() { return Math.random() - 0.5; });
     memCards = deck;
     var html = '';
@@ -338,6 +344,13 @@
       html += '<div class="mem-card" id="mc' + i + '" onclick="flipCard(' + i + ')"><div class="front">' + deck[i] + '</div></div>';
     }
     document.getElementById('memory-grid').innerHTML = html;
+    startTimer('mem-timer', 120, function() {
+      memLocked = true;
+      document.getElementById('mem-result').innerHTML =
+        '<div class="result-banner fail"><span class="emoji">⏰</span><span class="msg">Time\'s up! You found ' + memMatched + ' of 8 pairs</span></div>';
+      document.getElementById('mem-new-btn').style.display = 'block';
+      document.getElementById('mem-new-btn').textContent = 'Try Again ›';
+    });
   }
 
   function flipCard(i) {
@@ -356,10 +369,13 @@
       elA.classList.add('matched'); elB.classList.add('matched');
       memMatched++; totalScore += 5;
       document.getElementById('mem-pairs').textContent = memMatched + ' / 8';
-      document.getElementById('mem-info').textContent = memMatched === 8 ? 'Amazing! You found them all!' : 'Great match! Keep going!';
+      document.getElementById('mem-info').textContent = memMatched === 8 ? 'Amazing! All pairs found!' : 'Great match! Keep going!';
       if (memMatched === 8) {
-        document.getElementById('mem-result').innerHTML = '<div class="result-banner success"><span class="emoji">🎊</span><span class="msg">You matched all 8 pairs!</span></div>';
+        clearTimer();
+        document.getElementById('mem-result').innerHTML =
+          '<div class="result-banner success"><span class="emoji">🎊</span><span class="msg">You matched all 8 pairs!</span></div>';
         document.getElementById('mem-new-btn').style.display = 'block';
+        document.getElementById('mem-new-btn').textContent = 'Next Theme ›';
       }
     } else {
       setTimeout(function() {
@@ -402,11 +418,24 @@
       html += '<div class="pic-option" onclick="pickPic(this,\'' + opts[i] + '\')">' + opts[i] + '</div>';
     }
     document.getElementById('pic-options').innerHTML = html;
+    startTimer('pic-timer', 30, function() {
+      if (picAnswered) return;
+      picAnswered = true;
+      var p2 = picData[picIdx];
+      document.querySelectorAll('.pic-option').forEach(function(o) {
+        if (o.textContent === p2.answer) o.classList.add('correct');
+      });
+      document.getElementById('pic-result').innerHTML =
+        '<div class="result-banner fail" style="margin-top:16px"><span class="emoji">⏰</span><span class="msg">Time\'s up! Answer: ' + p2.answer + '</span></div>';
+      document.getElementById('pic-next-btn').style.display = 'block';
+      document.getElementById('pic-next-btn').textContent = picIdx < picData.length - 1 ? 'Next ›' : 'Finish ✓';
+    });
   }
 
   function pickPic(el, choice) {
     if (picAnswered) return;
     picAnswered = true;
+    clearTimer();
     var p = picData[picIdx];
     var correct = choice === p.answer;
     if (correct) { picScore += 10; totalScore += 10; el.classList.add('correct'); }
