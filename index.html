@@ -233,17 +233,77 @@
   }
 
   /* ===== WORD PUZZLE ===== */
-  var wordData = [
+  var allWordData = [
+    // Fruits
+    { clue: "A fruit that is yellow and monkeys love it 🍌", answer: "BANANA", letters: ["B","A","A","A","N","N","P","O","T"] },
+    { clue: "A round red fruit, sweet and crunchy 🍎", answer: "APPLE", letters: ["A","P","P","L","E","T","O","R","N"] },
+    { clue: "A juicy orange fruit from a tropical tree 🥭", answer: "MANGO", letters: ["M","A","N","G","O","T","L","E","R"] },
+    { clue: "A small red fruit that grows in bunches and makes wine 🍇", answer: "GRAPE", letters: ["G","R","A","P","E","T","O","N","S"] },
+    { clue: "A yellow citrus fruit that is very sour 🍋", answer: "LEMON", letters: ["L","E","M","O","N","T","A","S","P"] },
+    { clue: "A sweet pink fruit with fuzzy skin 🍑", answer: "PEACH", letters: ["P","E","A","C","H","T","O","R","L"] },
+    { clue: "A tropical fruit that is prickly outside and sweet inside 🍍", answer: "PINEAPPLE", letters: ["P","I","N","E","A","P","P","L","E","O","T","R"] },
+    { clue: "A small sweet red fruit used in jam 🍓", answer: "STRAWBERRY", letters: ["S","T","R","A","W","B","E","R","R","Y","O","P","N"] },
+    { clue: "A green or yellow pear-shaped fruit with creamy inside 🥑", answer: "AVOCADO", letters: ["A","V","O","C","A","D","O","T","E","R","S"] },
+    { clue: "A small sweet berry that is dark blue or purple 🫐", answer: "BLUEBERRY", letters: ["B","L","U","E","B","E","R","R","Y","T","A","O"] },
+    { clue: "A bright orange fruit full of juice and vitamin C 🍊", answer: "ORANGE", letters: ["O","R","A","N","G","E","T","S","L"] },
+    { clue: "A sweet tropical fruit that is brown outside and white inside 🥥", answer: "COCONUT", letters: ["C","O","C","O","N","U","T","A","E","R"] },
+    { clue: "A small green sour fruit used in drinks 🍈", answer: "LIME", letters: ["L","I","M","E","T","A","O","R","N"] },
+    { clue: "A fruit with a hard shell, used in pies at Thanksgiving 🎃", answer: "PUMPKIN", letters: ["P","U","M","P","K","I","N","T","A","O"] },
+    // Coffee & drinks
     { clue: "You drink it in the morning, it's hot and smells nice ☕", answer: "COFFEE", letters: ["C","O","F","F","E","T","A","H","E"] },
-    { clue: "It shines bright in the sky during the day ☀️", answer: "SUN", letters: ["S","U","A","T","T","O","M","N"] },
+    { clue: "A creamy Italian coffee with steamed milk ☕", answer: "LATTE", letters: ["L","A","T","T","E","O","R","N","S"] },
+    { clue: "A small strong shot of black coffee ☕", answer: "ESPRESSO", letters: ["E","S","P","R","E","S","S","O","T","A","N"] },
+    { clue: "Hot water poured through ground coffee in a machine ☕", answer: "CAPPUCCINO", letters: ["C","A","P","P","U","C","C","I","N","O","T","E"] },
+    { clue: "A hot drink made from leaves, very popular in England 🍵", answer: "TEA", letters: ["T","E","A","O","R","S","N","P"] },
+    { clue: "A sweet cold coffee drink with whipped cream on top ☕", answer: "MOCHA", letters: ["M","O","C","H","A","T","E","R","L"] },
+    // Nature & home
+    { clue: "It shines bright in the sky during the day ☀️", answer: "SUN", letters: ["S","U","N","A","T","O","M","P"] },
     { clue: "A garden flower that is red and has thorns 🌹", answer: "ROSE", letters: ["R","O","S","E","T","A","L","W"] },
     { clue: "You read this, it has many pages and a story 📖", answer: "BOOK", letters: ["B","O","O","K","P","A","M","T"] },
-    { clue: "A fruit that is yellow and monkeys love it 🍌", answer: "BANANA", letters: ["B","A","A","A","N","N","P","O","T"] }
+    { clue: "Drops of water that fall from clouds on a rainy day 🌧️", answer: "RAIN", letters: ["R","A","I","N","T","O","S","E"] },
+    { clue: "A bright yellow flower that follows the sun 🌻", answer: "SUNFLOWER", letters: ["S","U","N","F","L","O","W","E","R","T","A","P"] },
+    { clue: "The white fluffy things you see floating in the sky ☁️", answer: "CLOUD", letters: ["C","L","O","U","D","T","A","E","R"] },
+    { clue: "Water frozen into tiny crystals that falls in winter ❄️", answer: "SNOW", letters: ["S","N","O","W","T","A","E","R"] },
+    { clue: "A big beautiful tree that gives shade in summer 🌳", answer: "TREE", letters: ["T","R","E","E","A","N","O","S"] },
+    // Food
+    { clue: "Flat Italian food with sauce and cheese, baked in an oven 🍕", answer: "PIZZA", letters: ["P","I","Z","Z","A","T","O","E","R"] },
+    { clue: "White grains cooked in water, eaten with curry 🍚", answer: "RICE", letters: ["R","I","C","E","T","A","O","N"] },
+    { clue: "A round bread with a patty inside, often from a fast food place 🍔", answer: "BURGER", letters: ["B","U","R","G","E","R","T","A","N"] },
+    { clue: "Thin strips of dough cooked in oil, salty and crunchy 🍟", answer: "CHIPS", letters: ["C","H","I","P","S","T","O","A","N"] },
+    { clue: "A sweet dessert you eat at birthdays with candles 🎂", answer: "CAKE", letters: ["C","A","K","E","T","O","R","N"] },
+    { clue: "Cold sweet creamy dessert on a stick or in a cone 🍦", answer: "ICECREAM", letters: ["I","C","E","C","R","E","A","M","T","O","N","S"] },
+    { clue: "Long thin pasta with tomato sauce 🍝", answer: "SPAGHETTI", letters: ["S","P","A","G","H","E","T","T","I","O","R","N"] },
+    { clue: "A healthy morning meal with oats and milk 🥣", answer: "PORRIDGE", letters: ["P","O","R","R","I","D","G","E","T","A","N"] },
+    // Animals
+    { clue: "A large animal with a long trunk 🐘", answer: "ELEPHANT", letters: ["E","L","E","P","H","A","N","T","O","R","S"] },
+    { clue: "A striped big cat that lives in jungles 🐯", answer: "TIGER", letters: ["T","I","G","E","R","A","N","O","S"] },
+    { clue: "Man's best friend, it barks and wags its tail 🐕", answer: "DOG", letters: ["D","O","G","T","A","E","R","N"] },
+    { clue: "A fluffy animal that purrs and chases mice 🐱", answer: "CAT", letters: ["C","A","T","O","R","E","N","S"] },
+    { clue: "A colorful bird that can talk and copy words 🦜", answer: "PARROT", letters: ["P","A","R","R","O","T","E","N","S"] },
+    { clue: "A very large black and white bear from China 🐼", answer: "PANDA", letters: ["P","A","N","D","A","T","O","E","R"] },
+    // Places & travel
+    { clue: "A place where you go to read many books for free 📚", answer: "LIBRARY", letters: ["L","I","B","R","A","R","Y","T","O","E"] },
+    { clue: "A place with beautiful sand and waves where people swim 🏖️", answer: "BEACH", letters: ["B","E","A","C","H","T","O","R","N"] },
+    { clue: "A very tall building in the city 🏙️", answer: "TOWER", letters: ["T","O","W","E","R","A","N","S","P"] },
+    { clue: "A place where flowers and vegetables are grown 🌷", answer: "GARDEN", letters: ["G","A","R","D","E","N","T","O","S"] },
   ];
-  var wordIdx = 0, wordScore = 0, wordGuess = [], wordUsed = {};
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  var wordData = [], wordIdx = 0, wordScore = 0, wordGuess = [], wordUsed = {};
 
   function startWord() {
     wordIdx = 0; wordScore = 0;
+    wordData = shuffle(allWordData).slice(0, 6).map(function(w) {
+      return { clue: w.clue, answer: w.answer, letters: shuffle(w.letters) };
+    });
     showScreen('word-screen');
     loadWord();
   }
