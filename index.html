@@ -80,6 +80,28 @@
 
     .spacer { flex: 1; }
     .total-score-line { text-align: center; font-size: 17px; color: #666; margin-top: 24px; padding-bottom: 24px; }
+
+    /* Word Builder */
+    .game-icon.builder { background: #F3E8FB; }
+    .wb-instruction { font-size: 18px; color: #555; text-align: center; margin-bottom: 14px; line-height: 1.5; }
+    .wb-tiles { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .wb-tile { width: 58px; height: 66px; background: #fff; border: 2px solid #9B59B6; border-radius: 14px; font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #6C2D8A; transition: opacity 0.15s; -webkit-tap-highlight-color: transparent; }
+    .wb-tile:active { background: #F3E8FB; }
+    .wb-tile.used { opacity: 0.2; pointer-events: none; }
+    .wb-current { display: flex; justify-content: center; align-items: flex-end; gap: 8px; min-height: 64px; margin-bottom: 12px; flex-wrap: wrap; }
+    .wb-current-box { width: 48px; height: 58px; border-bottom: 3px solid #9B59B6; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-size: 26px; font-weight: 700; color: #6C2D8A; }
+    .wb-btn-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .btn-secondary { background: #fff; color: #9B59B6; border: 2px solid #9B59B6; border-radius: 14px; padding: 14px; font-size: 18px; font-weight: 600; cursor: pointer; flex: 1; }
+    .btn-submit { background: #9B59B6; color: #fff; border: none; border-radius: 14px; padding: 14px; font-size: 18px; font-weight: 600; cursor: pointer; flex: 2; }
+    .btn-submit:active { background: #6C2D8A; }
+    .btn-secondary:active { background: #F3E8FB; }
+    .wb-found-label { font-size: 15px; color: #888; margin-bottom: 8px; text-align: center; }
+    .wb-found-words { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; }
+    .wb-found-chip { background: #E1F5EE; border: 1px solid #1D9E75; border-radius: 20px; padding: 6px 14px; font-size: 17px; font-weight: 600; color: #085041; }
+    .wb-feedback { text-align: center; font-size: 18px; font-weight: 600; min-height: 28px; margin-bottom: 4px; }
+    .wb-feedback.good { color: #0F6E56; }
+    .wb-feedback.bad { color: #A32D2D; }
+    .wb-min-info { font-size: 14px; color: #aaa; text-align: center; margin-bottom: 6px; }
   </style>
 </head>
 <body>
@@ -113,6 +135,14 @@
         <div class="game-info">
           <div class="game-name">Picture Quiz</div>
           <div class="game-desc">Name what you see!</div>
+        </div>
+        <div class="game-arrow">›</div>
+      </div>
+      <div class="game-card" onclick="startBuilder()">
+        <div class="game-icon builder">🔤</div>
+        <div class="game-info">
+          <div class="game-name">Word Builder</div>
+          <div class="game-desc">Make as many words as you can!</div>
         </div>
         <div class="game-arrow">›</div>
       </div>
@@ -195,6 +225,41 @@
     <button class="btn-primary" id="pic-next-btn" onclick="nextPicture()" style="display:none">Next ›</button>
   </div>
 
+  <!-- WORD BUILDER -->
+  <div class="screen" id="builder-screen">
+    <div class="top-bar">
+      <div class="back-btn" onclick="goHome()">‹</div>
+      <div class="screen-title">Word Builder</div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-block">
+        <div class="stat-label">Score</div>
+        <div class="stat-val" id="wb-score">0</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Found</div>
+        <div class="stat-val" id="wb-found-count">0</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Time</div>
+        <div class="stat-val timer-val" id="wb-timer">120</div>
+      </div>
+    </div>
+    <div class="wb-instruction">Tap letters to make a word, then press <strong>Submit</strong>!<br>Find as many words as you can 🌟</div>
+    <div class="wb-min-info">Words must be 3 or more letters</div>
+    <div class="wb-current" id="wb-current"></div>
+    <div class="wb-tiles" id="wb-tiles"></div>
+    <div class="wb-feedback" id="wb-feedback"></div>
+    <div class="wb-btn-row">
+      <button class="btn-secondary" onclick="wbClear()">Clear</button>
+      <button class="btn-submit" onclick="wbSubmit()">Submit ✓</button>
+    </div>
+    <div class="wb-found-label">Words you found:</div>
+    <div class="wb-found-words" id="wb-found-words"></div>
+    <div class="spacer"></div>
+    <button class="btn-primary" id="wb-next-btn" onclick="startBuilder()" style="display:none;background:#9B59B6;">Next Letters ›</button>
+  </div>
+
 </div>
 <script>
   var totalScore = 0;
@@ -237,54 +302,67 @@
     // Fruits
     { clue: "A fruit that is yellow and monkeys love it 🍌", answer: "BANANA", letters: ["B","A","A","A","N","N","P","O","T"] },
     { clue: "A round red fruit, sweet and crunchy 🍎", answer: "APPLE", letters: ["A","P","P","L","E","T","O","R","N"] },
-    { clue: "A juicy orange fruit from a tropical tree 🥭", answer: "MANGO", letters: ["M","A","N","G","O","T","L","E","R"] },
-    { clue: "A small red fruit that grows in bunches and makes wine 🍇", answer: "GRAPE", letters: ["G","R","A","P","E","T","O","N","S"] },
+    { clue: "India's national fruit, sweet and yellow inside 🥭", answer: "MANGO", letters: ["M","A","N","G","O","T","L","E","R"] },
+    { clue: "A small red fruit that grows in bunches 🍇", answer: "GRAPE", letters: ["G","R","A","P","E","T","O","N","S"] },
     { clue: "A yellow citrus fruit that is very sour 🍋", answer: "LEMON", letters: ["L","E","M","O","N","T","A","S","P"] },
-    { clue: "A sweet pink fruit with fuzzy skin 🍑", answer: "PEACH", letters: ["P","E","A","C","H","T","O","R","L"] },
     { clue: "A tropical fruit that is prickly outside and sweet inside 🍍", answer: "PINEAPPLE", letters: ["P","I","N","E","A","P","P","L","E","O","T","R"] },
-    { clue: "A small sweet red fruit used in jam 🍓", answer: "STRAWBERRY", letters: ["S","T","R","A","W","B","E","R","R","Y","O","P","N"] },
-    { clue: "A green or yellow pear-shaped fruit with creamy inside 🥑", answer: "AVOCADO", letters: ["A","V","O","C","A","D","O","T","E","R","S"] },
-    { clue: "A small sweet berry that is dark blue or purple 🫐", answer: "BLUEBERRY", letters: ["B","L","U","E","B","E","R","R","Y","T","A","O"] },
-    { clue: "A bright orange fruit full of juice and vitamin C 🍊", answer: "ORANGE", letters: ["O","R","A","N","G","E","T","S","L"] },
-    { clue: "A sweet tropical fruit that is brown outside and white inside 🥥", answer: "COCONUT", letters: ["C","O","C","O","N","U","T","A","E","R"] },
-    { clue: "A small green sour fruit used in drinks 🍈", answer: "LIME", letters: ["L","I","M","E","T","A","O","R","N"] },
-    { clue: "A fruit with a hard shell, used in pies at Thanksgiving 🎃", answer: "PUMPKIN", letters: ["P","U","M","P","K","I","N","T","A","O"] },
-    // Coffee & drinks
+    { clue: "A bright orange fruit full of juice 🍊", answer: "ORANGE", letters: ["O","R","A","N","G","E","T","S","L"] },
+    { clue: "A sweet tropical fruit that is brown outside, white inside 🥥", answer: "COCONUT", letters: ["C","O","C","O","N","U","T","A","E","R"] },
+    { clue: "A small green sour fruit used in nimbu pani 🍋", answer: "LIME", letters: ["L","I","M","E","T","A","O","R","N"] },
+    { clue: "A big green fruit that is red and juicy inside 🍉", answer: "WATERMELON", letters: ["W","A","T","E","R","M","E","L","O","N","T","S"] },
+    { clue: "A sweet brown fruit that grows on tall palm trees 🌴", answer: "DATE", letters: ["D","A","T","E","O","R","N","S"] },
+    { clue: "A small red or green fruit used to make chutney 🍒", answer: "GUAVA", letters: ["G","U","A","V","A","T","O","R","E"] },
+    // Drinks & everyday
+    { clue: "A hot spiced drink Indians love in the morning ☕", answer: "CHAI", letters: ["C","H","A","I","T","O","R","N"] },
+    { clue: "A hot drink made from leaves 🍵", answer: "TEA", letters: ["T","E","A","O","R","S","N","P"] },
     { clue: "You drink it in the morning, it's hot and smells nice ☕", answer: "COFFEE", letters: ["C","O","F","F","E","T","A","H","E"] },
-    { clue: "A creamy Italian coffee with steamed milk ☕", answer: "LATTE", letters: ["L","A","T","T","E","O","R","N","S"] },
-    { clue: "A small strong shot of black coffee ☕", answer: "ESPRESSO", letters: ["E","S","P","R","E","S","S","O","T","A","N"] },
-    { clue: "Hot water poured through ground coffee in a machine ☕", answer: "CAPPUCCINO", letters: ["C","A","P","P","U","C","C","I","N","O","T","E"] },
-    { clue: "A hot drink made from leaves, very popular in England 🍵", answer: "TEA", letters: ["T","E","A","O","R","S","N","P"] },
-    { clue: "A sweet cold coffee drink with whipped cream on top ☕", answer: "MOCHA", letters: ["M","O","C","H","A","T","E","R","L"] },
+    { clue: "A cool sweet drink made with milk and fruit 🥛", answer: "LASSI", letters: ["L","A","S","S","I","T","O","R","N"] },
+    { clue: "Pure clear liquid we drink every day 💧", answer: "WATER", letters: ["W","A","T","E","R","O","N","S"] },
+    // Indian food & everyday words
+    { clue: "A flat round bread cooked on a tawa every day 🫓", answer: "ROTI", letters: ["R","O","T","I","A","N","S","E"] },
+    { clue: "Yellow split lentils cooked as a thick soup 🍲", answer: "DAL", letters: ["D","A","L","T","O","R","N","S"] },
+    { clue: "White grains cooked in water, eaten with curry 🍚", answer: "RICE", letters: ["R","I","C","E","T","A","O","N"] },
+    { clue: "Pure golden fat made from butter, used in cooking 🫙", answer: "GHEE", letters: ["G","H","E","E","T","A","O","N"] },
+    { clue: "A sacred plant kept at home, used in prayers 🌿", answer: "TULSI", letters: ["T","U","L","S","I","A","O","N","R"] },
+    { clue: "A small oil lamp lit during Diwali 🪔", answer: "DIYA", letters: ["D","I","Y","A","T","O","R","N","S"] },
+    { clue: "A six-yard cloth worn by Indian women 👘", answer: "SARI", letters: ["S","A","R","I","T","O","N","E"] },
+    { clue: "A spice that makes food yellow and is used in medicine 🌿", answer: "TURMERIC", letters: ["T","U","R","M","E","R","I","C","A","N","O"] },
     // Nature & home
     { clue: "It shines bright in the sky during the day ☀️", answer: "SUN", letters: ["S","U","N","A","T","O","M","P"] },
     { clue: "A garden flower that is red and has thorns 🌹", answer: "ROSE", letters: ["R","O","S","E","T","A","L","W"] },
     { clue: "You read this, it has many pages and a story 📖", answer: "BOOK", letters: ["B","O","O","K","P","A","M","T"] },
     { clue: "Drops of water that fall from clouds on a rainy day 🌧️", answer: "RAIN", letters: ["R","A","I","N","T","O","S","E"] },
-    { clue: "A bright yellow flower that follows the sun 🌻", answer: "SUNFLOWER", letters: ["S","U","N","F","L","O","W","E","R","T","A","P"] },
-    { clue: "The white fluffy things you see floating in the sky ☁️", answer: "CLOUD", letters: ["C","L","O","U","D","T","A","E","R"] },
-    { clue: "Water frozen into tiny crystals that falls in winter ❄️", answer: "SNOW", letters: ["S","N","O","W","T","A","E","R"] },
-    { clue: "A big beautiful tree that gives shade in summer 🌳", answer: "TREE", letters: ["T","R","E","E","A","N","O","S"] },
-    // Food
-    { clue: "Flat Italian food with sauce and cheese, baked in an oven 🍕", answer: "PIZZA", letters: ["P","I","Z","Z","A","T","O","E","R"] },
-    { clue: "White grains cooked in water, eaten with curry 🍚", answer: "RICE", letters: ["R","I","C","E","T","A","O","N"] },
-    { clue: "A round bread with a patty inside, often from a fast food place 🍔", answer: "BURGER", letters: ["B","U","R","G","E","R","T","A","N"] },
-    { clue: "Thin strips of dough cooked in oil, salty and crunchy 🍟", answer: "CHIPS", letters: ["C","H","I","P","S","T","O","A","N"] },
-    { clue: "A sweet dessert you eat at birthdays with candles 🎂", answer: "CAKE", letters: ["C","A","K","E","T","O","R","N"] },
-    { clue: "Cold sweet creamy dessert on a stick or in a cone 🍦", answer: "ICECREAM", letters: ["I","C","E","C","R","E","A","M","T","O","N","S"] },
-    { clue: "Long thin pasta with tomato sauce 🍝", answer: "SPAGHETTI", letters: ["S","P","A","G","H","E","T","T","I","O","R","N"] },
-    { clue: "A healthy morning meal with oats and milk 🥣", answer: "PORRIDGE", letters: ["P","O","R","R","I","D","G","E","T","A","N"] },
+    { clue: "India's national flower, grows beautifully in water 🪷", answer: "LOTUS", letters: ["L","O","T","U","S","A","R","N","E"] },
+    { clue: "The white fluffy things floating in the sky ☁️", answer: "CLOUD", letters: ["C","L","O","U","D","T","A","E","R"] },
+    { clue: "A big beautiful tree that gives shade 🌳", answer: "TREE", letters: ["T","R","E","E","A","N","O","S"] },
+    { clue: "A tree with medicinal leaves used in India for centuries 🌿", answer: "NEEM", letters: ["N","E","E","M","T","A","O","R","S"] },
+    { clue: "The bright full one in the sky on Purnima night 🌕", answer: "MOON", letters: ["M","O","O","N","T","A","E","R"] },
+    // Indian places & monuments
+    { clue: "The famous white marble monument in Agra, built by Shah Jahan 🕌", answer: "TAJMAHAL", letters: ["T","A","J","M","A","H","A","L","O","R","N","E"] },
+    { clue: "The most sacred river in India, flows through Varanasi 🏞️", answer: "GANGA", letters: ["G","A","N","G","A","T","O","R","E","S"] },
+    { clue: "The great river that starts in Karnataka's Coorg hills 🏞️", answer: "KAVERI", letters: ["K","A","V","E","R","I","T","O","N","S"] },
+    { clue: "India's capital city where the Red Fort stands 🏙️", answer: "DELHI", letters: ["D","E","L","H","I","T","A","O","N"] },
+    { clue: "The city of temples in Uttar Pradesh on the Ganga river 🛕", answer: "VARANASI", letters: ["V","A","R","A","N","A","S","I","T","O","E"] },
+    { clue: "A place where Hindus pray, with bells and incense 🛕", answer: "TEMPLE", letters: ["T","E","M","P","L","E","A","O","R","N"] },
+    { clue: "India's national bird, known for its beautiful feathers 🦚", answer: "PEACOCK", letters: ["P","E","A","C","O","C","K","T","R","N","S"] },
     // Animals
-    { clue: "A large animal with a long trunk 🐘", answer: "ELEPHANT", letters: ["E","L","E","P","H","A","N","T","O","R","S"] },
-    { clue: "A striped big cat that lives in jungles 🐯", answer: "TIGER", letters: ["T","I","G","E","R","A","N","O","S"] },
+    { clue: "A large animal with a long trunk, India's national heritage 🐘", answer: "ELEPHANT", letters: ["E","L","E","P","H","A","N","T","O","R","S"] },
+    { clue: "India's national animal, lives in forests 🐯", answer: "TIGER", letters: ["T","I","G","E","R","A","N","O","S"] },
     { clue: "Man's best friend, it barks and wags its tail 🐕", answer: "DOG", letters: ["D","O","G","T","A","E","R","N"] },
     { clue: "A fluffy animal that purrs and chases mice 🐱", answer: "CAT", letters: ["C","A","T","O","R","E","N","S"] },
-    { clue: "A colorful bird that can talk and copy words 🦜", answer: "PARROT", letters: ["P","A","R","R","O","T","E","N","S"] },
-    { clue: "A very large black and white bear from China 🐼", answer: "PANDA", letters: ["P","A","N","D","A","T","O","E","R"] },
-    // Places & travel
-    { clue: "A place where you go to read many books for free 📚", answer: "LIBRARY", letters: ["L","I","B","R","A","R","Y","T","O","E"] },
+    { clue: "A colorful bird that talks and sits on shoulders 🦜", answer: "PARROT", letters: ["P","A","R","R","O","T","E","N","S"] },
+    { clue: "A holy animal in India, gives us milk 🐄", answer: "COW", letters: ["C","O","W","T","A","E","R","N"] },
+    // Fun food & treats
+    { clue: "A sweet dessert you eat at birthdays with candles 🎂", answer: "CAKE", letters: ["C","A","K","E","T","O","R","N"] },
+    { clue: "A round flat bread with cheese and sauce, baked in an oven 🍕", answer: "PIZZA", letters: ["P","I","Z","Z","A","T","O","E","R"] },
+    { clue: "Cold sweet creamy dessert in a cone or cup 🍦", answer: "ICECREAM", letters: ["I","C","E","C","R","E","A","M","T","O","N","S"] },
+    { clue: "A round bread with a patty inside, often from a fast food place 🍔", answer: "BURGER", letters: ["B","U","R","G","E","R","T","A","N","O"] },
+    { clue: "Thin salty strips fried in oil, eaten as a snack 🍟", answer: "CHIPS", letters: ["C","H","I","P","S","T","O","A","N","R"] },
+    { clue: "A sweet creamy drink that comes from cows 🥛", answer: "MILK", letters: ["M","I","L","K","T","A","O","R","N"] },
+    { clue: "A sweet brown drink that children love, made from cocoa 🍫", answer: "CHOCOLATE", letters: ["C","H","O","C","O","L","A","T","E","R","N","S"] },
+    { clue: "A soft sweet bread with cream and jam inside 🧁", answer: "BISCUIT", letters: ["B","I","S","C","U","I","T","A","O","N"] },
+    // Places
     { clue: "A place with beautiful sand and waves where people swim 🏖️", answer: "BEACH", letters: ["B","E","A","C","H","T","O","R","N"] },
-    { clue: "A very tall building in the city 🏙️", answer: "TOWER", letters: ["T","O","W","E","R","A","N","S","P"] },
     { clue: "A place where flowers and vegetables are grown 🌷", answer: "GARDEN", letters: ["G","A","R","D","E","N","T","O","S"] },
   ];
 
@@ -447,18 +525,75 @@
   }
 
   /* ===== PICTURE QUIZ ===== */
-  var picData = [
+  var allPicData = [
+    // Animals
     { img: '🐘', question: 'What animal is this?', options: ['Elephant','Hippo','Rhino','Bear'], answer: 'Elephant' },
-    { img: '🍊', question: 'What fruit is this?', options: ['Lemon','Orange','Mango','Peach'], answer: 'Orange' },
-    { img: '🚂', question: 'What vehicle is this?', options: ['Bus','Car','Train','Boat'], answer: 'Train' },
-    { img: '🌻', question: 'What flower is this?', options: ['Rose','Daisy','Sunflower','Lotus'], answer: 'Sunflower' },
+    { img: '🐯', question: 'What animal is this?', options: ['Lion','Tiger','Cheetah','Leopard'], answer: 'Tiger' },
     { img: '🦜', question: 'What bird is this?', options: ['Sparrow','Parrot','Eagle','Crow'], answer: 'Parrot' },
-    { img: '🎸', question: 'What instrument is this?', options: ['Sitar','Violin','Guitar','Flute'], answer: 'Guitar' }
+    { img: '🦚', question: 'What is India\'s national bird?', options: ['Eagle','Flamingo','Peacock','Crane'], answer: 'Peacock' },
+    { img: '🐄', question: 'What animal is this?', options: ['Buffalo','Horse','Cow','Goat'], answer: 'Cow' },
+    { img: '🐍', question: 'What animal is this?', options: ['Lizard','Worm','Snake','Eel'], answer: 'Snake' },
+    { img: '🦁', question: 'What animal is this?', options: ['Tiger','Leopard','Cheetah','Lion'], answer: 'Lion' },
+    { img: '🐒', question: 'What animal is this?', options: ['Bear','Monkey','Fox','Wolf'], answer: 'Monkey' },
+    { img: '🐕', question: 'What animal is this?', options: ['Fox','Wolf','Cat','Dog'], answer: 'Dog' },
+    { img: '🐱', question: 'What animal is this?', options: ['Rabbit','Dog','Cat','Squirrel'], answer: 'Cat' },
+    // Fruits
+    { img: '🥭', question: 'What fruit is this?', options: ['Papaya','Guava','Mango','Pineapple'], answer: 'Mango' },
+    { img: '🍊', question: 'What fruit is this?', options: ['Lemon','Lime','Orange','Grapefruit'], answer: 'Orange' },
+    { img: '🍌', question: 'What fruit is this?', options: ['Mango','Banana','Papaya','Pineapple'], answer: 'Banana' },
+    { img: '🍎', question: 'What fruit is this?', options: ['Pear','Plum','Apple','Guava'], answer: 'Apple' },
+    { img: '🍋', question: 'What fruit is this?', options: ['Orange','Lime','Mango','Lemon'], answer: 'Lemon' },
+    { img: '🍇', question: 'What fruit is this?', options: ['Berries','Grapes','Cherries','Plums'], answer: 'Grapes' },
+    { img: '🥥', question: 'What fruit is this?', options: ['Papaya','Guava','Coconut','Jackfruit'], answer: 'Coconut' },
+    { img: '🍉', question: 'What fruit is this?', options: ['Papaya','Pumpkin','Watermelon','Muskmelon'], answer: 'Watermelon' },
+    // Flowers & plants
+    { img: '🌹', question: 'What flower is this?', options: ['Jasmine','Marigold','Rose','Hibiscus'], answer: 'Rose' },
+    { img: '🌻', question: 'What flower is this?', options: ['Rose','Daisy','Marigold','Sunflower'], answer: 'Sunflower' },
+    { img: '🪷', question: 'What is India\'s national flower?', options: ['Rose','Jasmine','Marigold','Lotus'], answer: 'Lotus' },
+    { img: '🌺', question: 'What flower is this?', options: ['Rose','Hibiscus','Lotus','Jasmine'], answer: 'Hibiscus' },
+    // Vehicles
+    { img: '🚂', question: 'What vehicle is this?', options: ['Bus','Car','Train','Boat'], answer: 'Train' },
+    { img: '🚌', question: 'What vehicle is this?', options: ['Truck','Bus','Van','Tram'], answer: 'Bus' },
+    { img: '🛺', question: 'What vehicle is commonly seen on Indian roads?', options: ['Taxi','Auto Rickshaw','Bus','Cycle'], answer: 'Auto Rickshaw' },
+    { img: '✈️', question: 'What vehicle is this?', options: ['Helicopter','Rocket','Aeroplane','Kite'], answer: 'Aeroplane' },
+    { img: '🚢', question: 'What vehicle travels on water?', options: ['Submarine','Ship','Train','Bus'], answer: 'Ship' },
+    // Instruments
+    { img: '🎸', question: 'What instrument is this?', options: ['Sitar','Violin','Guitar','Flute'], answer: 'Guitar' },
+    { img: '🎺', question: 'What instrument is this?', options: ['Flute','Trumpet','Sitar','Drum'], answer: 'Trumpet' },
+    { img: '🥁', question: 'What instrument is this?', options: ['Tabla','Dholak','Drum','Mridangam'], answer: 'Drum' },
+    // Food & drinks
+    { img: '☕', question: 'What hot drink is this?', options: ['Milk','Juice','Coffee','Soup'], answer: 'Coffee' },
+    { img: '🍵', question: 'What hot drink is this?', options: ['Coffee','Milk','Tea','Soup'], answer: 'Tea' },
+    { img: '🍚', question: 'What food is this?', options: ['Wheat','Oats','Rice','Barley'], answer: 'Rice' },
+    { img: '🍞', question: 'What food is this?', options: ['Cake','Roti','Biscuit','Bread'], answer: 'Bread' },
+    // Indian places & knowledge
+    { img: '🕌', question: 'The Taj Mahal is in which city?', options: ['Delhi','Jaipur','Agra','Mumbai'], answer: 'Agra' },
+    { img: '🏰', question: 'What is the famous red fort in Delhi called?', options: ['Hawa Mahal','Agra Fort','Red Fort','Golconda'], answer: 'Red Fort' },
+    { img: '🌅', question: 'The Ganga is the most sacred what in India?', options: ['Mountain','Forest','River','Lake'], answer: 'River' },
+    { img: '🏔️', question: 'The Himalayas are the world\'s highest what?', options: ['Plains','Deserts','Rivers','Mountains'], answer: 'Mountains' },
+    { img: '🛕', question: 'What is this building called?', options: ['Church','Mosque','Temple','Gurudwara'], answer: 'Temple' },
+    // Nature & sky
+    { img: '☀️', question: 'What is shining in the sky?', options: ['Moon','Star','Sun','Planet'], answer: 'Sun' },
+    { img: '🌕', question: 'What is this in the night sky?', options: ['Sun','Star','Planet','Moon'], answer: 'Moon' },
+    { img: '🌈', question: 'What appears in the sky after rain?', options: ['Cloud','Lightning','Rainbow','Fog'], answer: 'Rainbow' },
+    { img: '⭐', question: 'What do we see twinkling in the night sky?', options: ['Moon','Planet','Star','Sun'], answer: 'Star' },
+    { img: '🌧️', question: 'What is falling from the clouds?', options: ['Snow','Hail','Rain','Dew'], answer: 'Rain' },
+    // Everyday objects
+    { img: '📚', question: 'What are these?', options: ['Files','Newspapers','Magazines','Books'], answer: 'Books' },
+    { img: '🕯️', question: 'What gives light in the dark?', options: ['Torch','Diya','Candle','Bulb'], answer: 'Candle' },
+    { img: '🪔', question: 'What do we light during Diwali?', options: ['Candle','Torch','Diya','Lamp'], answer: 'Diya' },
+    { img: '🧲', question: 'Which number is the lucky and sacred number in India?', options: ['3','7','108','9'], answer: '108' },
+    { img: '⌚', question: 'What do we wear to know the time?', options: ['Ring','Bangle','Watch','Bracelet'], answer: 'Watch' },
+    // Colors & simple concepts
+    { img: '🟥', question: 'What color is this?', options: ['Orange','Pink','Red','Maroon'], answer: 'Red' },
+    { img: '🟨', question: 'What color is this?', options: ['Orange','Yellow','Gold','Cream'], answer: 'Yellow' },
+    { img: '🟩', question: 'What color is this?', options: ['Blue','Teal','Lime','Green'], answer: 'Green' },
   ];
-  var picIdx = 0, picScore = 0, picAnswered = false;
+  var picData = [], picIdx = 0, picScore = 0, picAnswered = false;
 
   function startPicture() {
     picIdx = 0; picScore = 0; picAnswered = false;
+    picData = shuffle(allPicData).slice(0, 8);
     showScreen('picture-screen');
     loadPicture();
   }
@@ -518,6 +653,115 @@
     picIdx++;
     if (picIdx >= picData.length) { goHome(); return; }
     loadPicture();
+  }
+
+  /* ===== WORD BUILDER ===== */
+  // Each entry: letters to show, and the full list of valid words that can be made
+  var builderSets = [
+    { letters: ['C','A','T','S','R','E'], words: ['CAT','CATS','CAR','CARS','ARC','ARCS','ACE','ACES','ARE','EAR','EARS','ERA','ERAS','ACT','ACTS','SAT','RAT','RATS','TAR','TARS','ATE','TEA','TEAS','RAN','TAN','TANS','CAN','CANS','CARE','CARES','RACE','RACES','SCAR','STAR','CAST','CASE','CART','CARTS','CRATE','CRATES','TRACE','TRACES','STARE','STEAK'] },
+    { letters: ['R','O','S','E','G','A'], words: ['ARE','ORE','ORES','OAR','OARS','AGE','AGES','GAS','GAP','GAP','EGO','EAR','EARS','ERA','ERAS','ROE','RAN','RAGE','RAGES','ROSE','ROES','GOES','GORE','GORES','GORE','SOAR','SORE','SAGA','SAGE','OARS','GORSE','ARGOS','AROSE'] },
+    { letters: ['P','L','A','N','T','S'], words: ['LAP','LAPS','NAP','NAPS','PAL','PALS','PAN','PANS','PAT','PATS','TAP','TAPS','TAN','TANS','ANT','ANTS','NAT','SAP','SAT','SPA','PLAN','PLANS','SLAP','SNAP','SPAN','PANT','PANTS','PLANT','PLANTS','SLANT'] },
+    { letters: ['G','A','R','D','E','N'], words: ['AND','ARE','EAR','EARS','ERA','ERAS','NAG','NAP','RAG','RAGS','RAN','RED','RAN','DEN','DENS','END','ENDS','DARE','DARES','DEAR','DEARS','EARN','EARNS','NEAR','NEARS','RANG','RANGE','GANDER','GARDEN','ANGER','GRAND','GRADE','GANDER','RAGED','GROAN','DARN'] },
+    { letters: ['F','R','U','I','T','S'], words: ['FUR','FURS','FIT','FITS','SIT','SIR','RUT','RUTS','RUG','SUE','TUB','TIE','TIES','SUIT','SURF','TURF','TURFS','FRUIT','FRUITS','FIRST','FIST','SIFT','STIR'] },
+    { letters: ['B','R','E','A','D','S'], words: ['ARE','BAR','BARS','BED','BEAD','BEADS','BEAR','BEARS','BARE','BARES','BARD','BARDS','BRAD','BRADS','BRAE','BAD','BAS','DRAB','DRABS','DARE','DARES','DEAR','DEARS','EAR','EARS','ERA','ERAS','READ','READS','REDS','SEAR','SERA','BARS','ARBS','BASER','BEARD','BEARDS','BREAD','BREADS'] },
+    { letters: ['M','O','U','N','T','A'], words: ['ANT','ANTS','MON','MAN','MEN','MAT','OAT','OATS','OUT','OWN','TAN','TANS','TON','TONS','NUT','NUTS','MOT','MOAT','MOATS','NOUN','TUNA','ATOM','ATOP','MOAN','MOANS','MOUNT','AMOUNT'] },
+    { letters: ['S','P','R','I','N','G'], words: ['GIN','GINS','GRIN','GRINS','GRIP','GRIPS','NIP','NIPS','PIN','PINS','PING','PINGS','PIG','PIGS','RIG','RIGS','RING','RINGS','RIP','RIPS','SIN','SIP','SIR','SING','SNIP','SPIN','SPRING'] },
+    { letters: ['C','L','O','U','D','S'], words: ['COD','CODS','COL','COLD','COLDS','CLOD','CLODS','CLOU','CLOUD','CLOUDS','CUD','CUDS','DUO','DUOS','LOU','LOUD','OUD','SOUL','LOCUS','COULD','SCOLD','COLDS','COLS','LOUD'] },
+    { letters: ['F','L','O','W','E','R'], words: ['FEW','FOR','FOE','FOES','FLO','FLEW','FLOE','FLOES','FLOW','FLOWS','FORE','FOWL','FOWLS','LOW','LORE','LOWE','OWE','OWES','OWL','OWLS','ORE','ORES','ROE','ROES','ROW','ROWS','ROLE','ROLES','ROEL','WOLF','WOLE','WOE','WOES','WORE','WOE','LOWER','LOWER','ROWEL','FOWLER','FLOWER'] },
+    { letters: ['H','E','A','R','T','S'], words: ['ARE','ART','ARTS','ATE','EAR','EARS','EAST','EAT','EATS','ERA','ERAS','HARE','HARES','HART','HARTS','HAT','HATE','HATES','HATS','HEAR','HEARS','HEART','HEARTS','HEAT','HEATS','HER','HERE','RAT','RATS','RATE','RATES','STAR','STARE','TAR','TARE','TARES','TARS','TEAR','TEARS','THE','SHARE','SHEAR','EARTH','EARTHS','HASTE','HATER','HATERS','RATHE','RATHS'] },
+    { letters: ['C','H','A','I','N','S'], words: ['ANI','ANIS','AIN','CAN','CANS','CHIN','CHINS','CHAIN','CHAINS','HAN','HAS','HIS','INS','NAG','NIP','SAC','SIN','INCH','NAICH','CHAI','CHIA','SCAN','SHIN','SNAG'] },
+  ];
+
+  var wbSet, wbScore = 0, wbFoundWords = [], wbCurrent = [], wbUsed = {}, wbTotalScore = 0;
+
+  function startBuilder() {
+    wbScore = 0; wbFoundWords = []; wbCurrent = []; wbUsed = {};
+    wbSet = builderSets[Math.floor(Math.random() * builderSets.length)];
+    document.getElementById('wb-score').textContent = 0;
+    document.getElementById('wb-found-count').textContent = 0;
+    document.getElementById('wb-found-words').innerHTML = '';
+    document.getElementById('wb-feedback').textContent = '';
+    document.getElementById('wb-feedback').className = 'wb-feedback';
+    document.getElementById('wb-next-btn').style.display = 'none';
+    showScreen('builder-screen');
+    wbRenderTiles();
+    wbRenderCurrent();
+    startTimer('wb-timer', 120, function() {
+      document.getElementById('wb-feedback').className = 'wb-feedback bad';
+      document.getElementById('wb-feedback').textContent = "Time's up! Great effort!";
+      document.getElementById('wb-next-btn').style.display = 'block';
+      document.querySelectorAll('.wb-tile').forEach(function(t) { t.style.pointerEvents = 'none'; });
+      document.querySelector('.btn-submit').style.pointerEvents = 'none';
+    });
+    showScreen('builder-screen');
+  }
+
+  function wbRenderTiles() {
+    var html = '';
+    for (var i = 0; i < wbSet.letters.length; i++) {
+      var cls = wbUsed[i] ? ' used' : '';
+      html += '<div class="wb-tile' + cls + '" onclick="wbPick(' + i + ')">' + wbSet.letters[i] + '</div>';
+    }
+    document.getElementById('wb-tiles').innerHTML = html;
+  }
+
+  function wbRenderCurrent() {
+    var html = '';
+    for (var i = 0; i < wbCurrent.length; i++) {
+      html += '<div class="wb-current-box">' + wbCurrent[i].letter + '</div>';
+    }
+    if (wbCurrent.length === 0) {
+      html = '<div style="color:#ccc;font-size:16px;align-self:center;">tap letters below</div>';
+    }
+    document.getElementById('wb-current').innerHTML = html;
+  }
+
+  function wbPick(i) {
+    if (wbUsed[i]) return;
+    wbUsed[i] = true;
+    wbCurrent.push({ letter: wbSet.letters[i], idx: i });
+    document.getElementById('wb-feedback').textContent = '';
+    document.getElementById('wb-feedback').className = 'wb-feedback';
+    wbRenderTiles();
+    wbRenderCurrent();
+  }
+
+  function wbClear() {
+    wbCurrent.forEach(function(c) { wbUsed[c.idx] = false; });
+    wbCurrent = [];
+    document.getElementById('wb-feedback').textContent = '';
+    document.getElementById('wb-feedback').className = 'wb-feedback';
+    wbRenderTiles();
+    wbRenderCurrent();
+  }
+
+  function wbSubmit() {
+    var word = wbCurrent.map(function(c) { return c.letter; }).join('');
+    var fb = document.getElementById('wb-feedback');
+    if (word.length < 3) {
+      fb.className = 'wb-feedback bad'; fb.textContent = 'Need at least 3 letters!'; wbClear(); return;
+    }
+    if (wbFoundWords.indexOf(word) !== -1) {
+      fb.className = 'wb-feedback bad'; fb.textContent = 'Already found ' + word + '!'; wbClear(); return;
+    }
+    if (wbSet.words.indexOf(word) === -1) {
+      fb.className = 'wb-feedback bad'; fb.textContent = word + ' — not a word, try again!'; wbClear(); return;
+    }
+    // Valid!
+    var pts = word.length <= 3 ? 5 : word.length <= 4 ? 8 : word.length <= 5 ? 12 : 18;
+    wbScore += pts; totalScore += pts;
+    wbFoundWords.push(word);
+    document.getElementById('wb-score').textContent = wbScore;
+    document.getElementById('wb-found-count').textContent = wbFoundWords.length;
+    fb.className = 'wb-feedback good';
+    fb.textContent = word + (word.length >= 6 ? ' — Amazing! +' : word.length >= 5 ? ' — Great! +' : ' — Good! +') + pts + ' pts';
+    var chip = document.createElement('div');
+    chip.className = 'wb-found-chip';
+    chip.textContent = word;
+    document.getElementById('wb-found-words').appendChild(chip);
+    wbCurrent = []; wbUsed = {};
+    wbRenderTiles();
+    wbRenderCurrent();
   }
 </script>
 </body>
